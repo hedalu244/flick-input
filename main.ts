@@ -7,17 +7,11 @@ function startup() {
     log("initialized.");
 }
 interface TouchStroke {
-    readonly identifier: number;
+    readonly id: number;
     readonly log: { x: number, y: number; }[];
 };
-function strokeStart(touch: Touch): TouchStroke {
-    return {
-        identifier: touch.identifier,
-        log: [{ x: touch.pageX, y: touch.pageY }],
-    };
-}
-
 const strokes: TouchStroke[] = [];
+
 function handleStart(event: TouchEvent) {
     event.preventDefault();
     log("touchstart.");
@@ -28,7 +22,10 @@ function handleStart(event: TouchEvent) {
     const touches: Touch[] = Array.from(event.changedTouches);
 
     touches.forEach(touch => {
-        const stroke = strokeStart(touch);
+        const stroke = {
+            id: touch.identifier,
+            log: [{ x: touch.pageX, y: touch.pageY }],
+        };;
         strokes.push(stroke);
 
         context.beginPath();
@@ -47,7 +44,7 @@ function handleMove(event: TouchEvent) {
     const touches = Array.from(event.changedTouches);
 
     touches.forEach(touch => {
-        const stroke = strokes.find(x => x.identifier === touch.identifier);
+        const stroke = strokes.find(x => x.id === touch.identifier);
         if (stroke === undefined) {
             log("can't figure out which touch to continue");
             return;
@@ -72,7 +69,7 @@ function handleEnd(event: TouchEvent) {
     const touches = Array.from(event.changedTouches);
 
     touches.forEach(touch => {
-        const strokeIndex = strokes.findIndex(x => x.identifier === touch.identifier);
+        const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
         const stroke = strokes[strokeIndex];
         if (stroke === undefined) {
             log("can't figure out which touch to end");
@@ -95,7 +92,7 @@ function handleCancel(event: TouchEvent) {
     const touches = Array.from(event.changedTouches);
 
     touches.forEach(touch => {
-        const strokeIndex = strokes.findIndex(x => x.identifier === touch.identifier);
+        const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
         if (strokeIndex === -1) {
             log("can't figure out which touch to Cancel");
             return;
