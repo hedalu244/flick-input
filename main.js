@@ -7,7 +7,14 @@ function startup() {
     el.addEventListener("touchmove", handleMove, false);
     log("initialized.");
 }
-const ongoingTouches = [];
+;
+function strokeStart(touch) {
+    return {
+        identifier: touch.identifier,
+        log: [{ x: touch.pageX, y: touch.pageY }],
+    };
+}
+const strokes = [];
 function handleStart(evt) {
     evt.preventDefault();
     log("touchstart.");
@@ -15,17 +22,17 @@ function handleStart(evt) {
     const ctx = el.getContext("2d");
     if (ctx === null)
         return;
-    const touches = evt.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-        log("touchstart:" + i + "...");
-        ongoingTouches.push(copyTouch(touches[i]));
-        const color = colorForTouch(touches[i]);
+    const touches = Array.from(evt.changedTouches);
+    touches.forEach(touch => {
+        const stroke = strokeStart(touch);
+        strokes.push(stroke);
+        const color = colorForStroke(stroke);
         ctx.beginPath();
-        ctx.arc(touches[i].pageX, touches[i].pageY, 4, 0, 2 * Math.PI, false); // a circle at the start
+        ctx.arc(touch.pageX, touch.pageY, 4, 0, 2 * Math.PI, false); // a circle at the start
         ctx.fillStyle = color;
         ctx.fill();
-        log("touchstart:" + i + ".");
-    }
+        log("touchstart");
+    });
 }
 function handleMove(evt) {
     evt.preventDefault();
@@ -33,27 +40,22 @@ function handleMove(evt) {
     const ctx = el.getContext("2d");
     if (ctx === null)
         return;
-    const touches = evt.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-        const color = colorForTouch(touches[i]);
-        const idx = ongoingTouchIndexById(touches[i].identifier);
-        if (idx >= 0) {
-            log("continuing touch " + idx);
-            ctx.beginPath();
-            log("ctx.moveTo(" + ongoingTouches[idx].pageX + ", " + ongoingTouches[idx].pageY + ");");
-            ctx.moveTo(ongoingTouches[idx].pageX, ongoingTouches[idx].pageY);
-            log("ctx.lineTo(" + touches[i].pageX + ", " + touches[i].pageY + ");");
-            ctx.lineTo(touches[i].pageX, touches[i].pageY);
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = color;
-            ctx.stroke();
-            ongoingTouches.splice(idx, 1, copyTouch(touches[i])); // swap in the new touch record
-            log(".");
-        }
-        else {
+    const touches = Array.from(evt.changedTouches);
+    touches.forEach(touch => {
+        const stroke = strokes.find(x => x.identifier === touch.identifier);
+        if (stroke === undefined) {
             log("can't figure out which touch to continue");
+            return;
         }
-    }
+        const color = colorForStroke(stroke);
+        ctx.beginPath();
+        ctx.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
+        ctx.lineTo(touch.pageX, touch.pageY);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = color;
+        ctx.stroke();
+        stroke.log.push({ x: touch.pageX, y: touch.pageY });
+    });
 }
 function handleEnd(evt) {
     evt.preventDefault();
@@ -62,57 +64,44 @@ function handleEnd(evt) {
     const ctx = el.getContext("2d");
     if (ctx === null)
         return;
-    const touches = evt.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-        const color = colorForTouch(touches[i]);
-        const idx = ongoingTouchIndexById(touches[i].identifier);
-        if (idx >= 0) {
-            ctx.lineWidth = 4;
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.moveTo(ongoingTouches[idx].pageX, ongoingTouches[idx].pageY);
-            ctx.lineTo(touches[i].pageX, touches[i].pageY);
-            ctx.fillRect(touches[i].pageX - 4, touches[i].pageY - 4, 8, 8); // and a square at the end
-            ongoingTouches.splice(idx, 1); // remove it; we're done
-        }
-        else {
+    const touches = Array.from(evt.changedTouches);
+    touches.forEach(touch => {
+        const strokeIndex = strokes.findIndex(x => x.identifier === touch.identifier);
+        const stroke = strokes[strokeIndex];
+        if (stroke === undefined) {
             log("can't figure out which touch to end");
+            return;
         }
-    }
+        const color = colorForStroke(stroke);
+        ctx.lineWidth = 4;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
+        ctx.lineTo(touch.pageX, touch.pageY);
+        ctx.fillRect(touch.pageX - 4, touch.pageY - 4, 8, 8); // and a square at the end
+        strokes.splice(strokeIndex, 1); // remove it; we're done
+    });
 }
 function handleCancel(evt) {
     evt.preventDefault();
     log("touchcancel.");
-    const touches = evt.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-        const idx = ongoingTouchIndexById(touches[i].identifier);
-        ongoingTouches.splice(idx, 1); // remove it; we're done
-    }
-}
-function colorForTouch(touch) {
-    const r = touch.identifier % 16;
-    const g = Math.floor(touch.identifier / 3) % 16;
-    const b = Math.floor(touch.identifier / 7) % 16;
-    const color = "#" + r.toString(16) + g.toString(16) + b.toString(16);
-    log("color for touch with identifier " + touch.identifier + " = " + color);
-    return color;
-}
-;
-function copyTouch(touch) {
-    return {
-        identifier: touch.identifier,
-        pageX: touch.pageX,
-        pageY: touch.pageY
-    };
-}
-function ongoingTouchIndexById(idToFind) {
-    for (let i = 0; i < ongoingTouches.length; i++) {
-        const id = ongoingTouches[i].identifier;
-        if (id == idToFind) {
-            return i;
+    const touches = Array.from(evt.changedTouches);
+    touches.forEach(touch => {
+        const strokeIndex = strokes.findIndex(x => x.identifier === touch.identifier);
+        if (strokeIndex === -1) {
+            log("can't figure out which touch to Cansel");
+            return;
         }
-    }
-    return -1; // not found
+        strokes.splice(strokeIndex, 1); // remove it; we're done
+    });
+}
+function colorForStroke(stroke) {
+    const r = stroke.identifier % 16;
+    const g = Math.floor(stroke.identifier / 3) % 16;
+    const b = Math.floor(stroke.identifier / 7) % 16;
+    const color = "#" + r.toString(16) + g.toString(16) + b.toString(16);
+    log("color for touch with identifier " + stroke.identifier + " = " + color);
+    return color;
 }
 function log(msg) {
     var p = document.getElementById('log');
