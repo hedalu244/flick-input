@@ -1,10 +1,10 @@
 "use strict";
 function startup() {
-    const el = document.getElementsByTagName("canvas")[0];
-    el.addEventListener("touchstart", handleStart, false);
-    el.addEventListener("touchend", handleEnd, false);
-    el.addEventListener("touchcancel", handleCancel, false);
-    el.addEventListener("touchmove", handleMove, false);
+    const canvas = document.getElementsByTagName("canvas")[0];
+    canvas.addEventListener("touchstart", handleStart, false);
+    canvas.addEventListener("touchend", handleEnd, false);
+    canvas.addEventListener("touchcancel", handleCancel, false);
+    canvas.addEventListener("touchmove", handleMove, false);
     log("initialized.");
 }
 ;
@@ -15,54 +15,54 @@ function strokeStart(touch) {
     };
 }
 const strokes = [];
-function handleStart(evt) {
-    evt.preventDefault();
+function handleStart(event) {
+    event.preventDefault();
     log("touchstart.");
-    const el = document.getElementsByTagName("canvas")[0];
-    const ctx = el.getContext("2d");
-    if (ctx === null)
+    const canvas = document.getElementsByTagName("canvas")[0];
+    const context = canvas.getContext("2d");
+    if (context === null)
         return;
-    const touches = Array.from(evt.changedTouches);
+    const touches = Array.from(event.changedTouches);
     touches.forEach(touch => {
         const stroke = strokeStart(touch);
         strokes.push(stroke);
-        ctx.beginPath();
-        ctx.arc(touch.pageX, touch.pageY, 4, 0, 2 * Math.PI, false); // a circle at the start
-        ctx.fillStyle = "black";
-        ctx.fill();
+        context.beginPath();
+        context.arc(touch.pageX, touch.pageY, 4, 0, 2 * Math.PI, false); // a circle at the start
+        context.fillStyle = "black";
+        context.fill();
         log("touchstart");
     });
 }
-function handleMove(evt) {
-    evt.preventDefault();
-    const el = document.getElementsByTagName("canvas")[0];
-    const ctx = el.getContext("2d");
-    if (ctx === null)
+function handleMove(event) {
+    event.preventDefault();
+    const canvas = document.getElementsByTagName("canvas")[0];
+    const context = canvas.getContext("2d");
+    if (context === null)
         return;
-    const touches = Array.from(evt.changedTouches);
+    const touches = Array.from(event.changedTouches);
     touches.forEach(touch => {
         const stroke = strokes.find(x => x.identifier === touch.identifier);
         if (stroke === undefined) {
             log("can't figure out which touch to continue");
             return;
         }
-        ctx.beginPath();
-        ctx.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
-        ctx.lineTo(touch.pageX, touch.pageY);
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "black";
-        ctx.stroke();
+        context.beginPath();
+        context.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
+        context.lineTo(touch.pageX, touch.pageY);
+        context.lineWidth = 4;
+        context.strokeStyle = "black";
+        context.stroke();
         stroke.log.push({ x: touch.pageX, y: touch.pageY });
     });
 }
-function handleEnd(evt) {
-    evt.preventDefault();
+function handleEnd(event) {
+    event.preventDefault();
     log("touchend");
-    const el = document.getElementsByTagName("canvas")[0];
-    const ctx = el.getContext("2d");
-    if (ctx === null)
+    const canvas = document.getElementsByTagName("canvas")[0];
+    const context = canvas.getContext("2d");
+    if (context === null)
         return;
-    const touches = Array.from(evt.changedTouches);
+    const touches = Array.from(event.changedTouches);
     touches.forEach(touch => {
         const strokeIndex = strokes.findIndex(x => x.identifier === touch.identifier);
         const stroke = strokes[strokeIndex];
@@ -70,23 +70,23 @@ function handleEnd(evt) {
             log("can't figure out which touch to end");
             return;
         }
-        ctx.lineWidth = 4;
-        ctx.fillStyle = "black";
-        ctx.beginPath();
-        ctx.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
-        ctx.lineTo(touch.pageX, touch.pageY);
-        ctx.fillRect(touch.pageX - 4, touch.pageY - 4, 8, 8); // and a square at the end
+        context.lineWidth = 4;
+        context.fillStyle = "black";
+        context.beginPath();
+        context.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
+        context.lineTo(touch.pageX, touch.pageY);
+        context.fillRect(touch.pageX - 4, touch.pageY - 4, 8, 8); // and a square at the end
         strokes.splice(strokeIndex, 1); // remove it; we're done
     });
 }
-function handleCancel(evt) {
-    evt.preventDefault();
+function handleCancel(event) {
+    event.preventDefault();
     log("touchcancel.");
-    const touches = Array.from(evt.changedTouches);
+    const touches = Array.from(event.changedTouches);
     touches.forEach(touch => {
         const strokeIndex = strokes.findIndex(x => x.identifier === touch.identifier);
         if (strokeIndex === -1) {
-            log("can't figure out which touch to Cansel");
+            log("can't figure out which touch to Cancel");
             return;
         }
         strokes.splice(strokeIndex, 1); // remove it; we're done
