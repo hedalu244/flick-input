@@ -55,7 +55,7 @@ function strokeStart(stroke: TouchStroke) {
     if (context === null) return;
 
     context.beginPath();
-    context.arc(stroke.log[stroke.log.length].x, stroke.log[stroke.log.length].y, 4, 0, 2 * Math.PI, false);  // a circle at the start
+    context.arc(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y, 8, 0, 2 * Math.PI, false);  // a circle at the start
     context.fillStyle = "black";
     context.fill();
 }
@@ -81,5 +81,5 @@ function strokeEnd(stroke: TouchStroke) {
     context.beginPath();
     context.moveTo(stroke.log[stroke.log.length - 2].x, stroke.log[stroke.log.length - 2].y);
     context.lineTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
-    context.fillRect(stroke.log[stroke.log.length - 1].x - 4, stroke.log[stroke.log.length - 1].y - 4, 8, 8);  // and a square at the end
+    context.fillRect(stroke.log[stroke.log.length - 1].x - 8, stroke.log[stroke.log.length - 1].y - 8, 16, 16);  // and a square at the end
 }
