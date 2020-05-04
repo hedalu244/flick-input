@@ -1,10 +1,61 @@
 "use strict";
 function startup() {
     const canvas = document.getElementsByTagName("canvas")[0];
-    canvas.addEventListener("touchstart", handleStart, false);
-    canvas.addEventListener("touchend", handleEnd, false);
-    canvas.addEventListener("touchcancel", handleCancel, false);
-    canvas.addEventListener("touchmove", handleMove, false);
+    canvas.addEventListener("touchstart", (event) => {
+        event.preventDefault();
+        log("touchstart.");
+        const touches = Array.from(event.changedTouches);
+        touches.forEach(touch => {
+            const stroke = {
+                id: touch.identifier,
+                log: [{ x: touch.pageX, y: touch.pageY }],
+            };
+            ;
+            strokes.push(stroke);
+            strokeStart(stroke);
+        });
+    }, false);
+    canvas.addEventListener("touchmove", (event) => {
+        event.preventDefault();
+        const touches = Array.from(event.changedTouches);
+        touches.forEach(touch => {
+            const stroke = strokes.find(x => x.id === touch.identifier);
+            if (stroke === undefined) {
+                log("can't figure out which touch to continue");
+                return;
+            }
+            stroke.log.push({ x: touch.pageX, y: touch.pageY });
+            strokeMove(stroke);
+        });
+    }, false);
+    canvas.addEventListener("touchend", (event) => {
+        event.preventDefault();
+        log("touchend");
+        const touches = Array.from(event.changedTouches);
+        touches.forEach(touch => {
+            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
+            const stroke = strokes[strokeIndex];
+            if (stroke === undefined) {
+                log("can't figure out which touch to end");
+                return;
+            }
+            strokes.splice(strokeIndex, 1); // remove it; we're done
+            strokeEnd(stroke);
+        });
+    }, false);
+    canvas.addEventListener("touchcancel", (event) => {
+        event.preventDefault();
+        log("touchcancel.");
+        const touches = Array.from(event.changedTouches);
+        touches.forEach(touch => {
+            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
+            if (strokeIndex === -1) {
+                log("can't figure out which touch to Cancel");
+                return;
+            }
+            strokes.splice(strokeIndex, 1); // remove it; we're done
+        });
+    }, false);
     log("initialized.");
 }
 ;
@@ -43,60 +94,6 @@ function strokeEnd(stroke) {
     context.moveTo(stroke.log[stroke.log.length - 2].x, stroke.log[stroke.log.length - 2].y);
     context.lineTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
     context.fillRect(stroke.log[stroke.log.length - 1].x - 4, stroke.log[stroke.log.length - 1].y - 4, 8, 8); // and a square at the end
-}
-function handleStart(event) {
-    event.preventDefault();
-    log("touchstart.");
-    const touches = Array.from(event.changedTouches);
-    touches.forEach(touch => {
-        const stroke = {
-            id: touch.identifier,
-            log: [{ x: touch.pageX, y: touch.pageY }],
-        };
-        ;
-        strokes.push(stroke);
-        strokeStart(stroke);
-    });
-}
-function handleMove(event) {
-    event.preventDefault();
-    const touches = Array.from(event.changedTouches);
-    touches.forEach(touch => {
-        const stroke = strokes.find(x => x.id === touch.identifier);
-        if (stroke === undefined) {
-            log("can't figure out which touch to continue");
-            return;
-        }
-        stroke.log.push({ x: touch.pageX, y: touch.pageY });
-        strokeMove(stroke);
-    });
-}
-function handleEnd(event) {
-    event.preventDefault();
-    log("touchend");
-    const touches = Array.from(event.changedTouches);
-    touches.forEach(touch => {
-        const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
-        const stroke = strokes[strokeIndex];
-        if (stroke === undefined) {
-            log("can't figure out which touch to end");
-            return;
-        }
-        strokes.splice(strokeIndex, 1); // remove it; we're done
-    });
-}
-function handleCancel(event) {
-    event.preventDefault();
-    log("touchcancel.");
-    const touches = Array.from(event.changedTouches);
-    touches.forEach(touch => {
-        const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
-        if (strokeIndex === -1) {
-            log("can't figure out which touch to Cancel");
-            return;
-        }
-        strokes.splice(strokeIndex, 1); // remove it; we're done
-    });
 }
 function log(msg) {
     var p = document.getElementById('log');
