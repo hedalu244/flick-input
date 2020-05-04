@@ -31,10 +31,9 @@ function handleStart(evt: TouchEvent) {
         const stroke = strokeStart(touch);
         strokes.push(stroke);
 
-        const color = colorForStroke(stroke);
         ctx.beginPath();
         ctx.arc(touch.pageX, touch.pageY, 4, 0, 2 * Math.PI, false);  // a circle at the start
-        ctx.fillStyle = color;
+        ctx.fillStyle = "black";
         ctx.fill();
         log("touchstart");
     });
@@ -53,12 +52,11 @@ function handleMove(evt: TouchEvent) {
             log("can't figure out which touch to continue");
             return;
         }
-        const color = colorForStroke(stroke);
         ctx.beginPath();
         ctx.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
         ctx.lineTo(touch.pageX, touch.pageY);
         ctx.lineWidth = 4;
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = "black";
         ctx.stroke();
 
         stroke.log.push({ x: touch.pageX, y: touch.pageY });
@@ -80,10 +78,9 @@ function handleEnd(evt: TouchEvent) {
             log("can't figure out which touch to end");
             return;
         }
-        const color = colorForStroke(stroke);
 
         ctx.lineWidth = 4;
-        ctx.fillStyle = color;
+        ctx.fillStyle = "black";
         ctx.beginPath();
         ctx.moveTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
         ctx.lineTo(touch.pageX, touch.pageY);
@@ -105,14 +102,6 @@ function handleCancel(evt: TouchEvent) {
         }
         strokes.splice(strokeIndex, 1);  // remove it; we're done
     });
-}
-function colorForStroke(stroke: TouchStroke) {
-    const r = stroke.identifier % 16;
-    const g = Math.floor(stroke.identifier / 3) % 16;
-    const b = Math.floor(stroke.identifier / 7) % 16;
-    const color = "#" + r.toString(16) + g.toString(16) + b.toString(16);
-    log("color for touch with identifier " + stroke.identifier + " = " + color);
-    return color;
 }
 
 function log(msg: string) {
