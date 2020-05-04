@@ -1,4 +1,7 @@
 "use strict";
+;
+const strokes = [];
+startup();
 function startup() {
     const canvas = document.getElementsByTagName("canvas")[0];
     canvas.addEventListener("touchstart", (event) => {
@@ -43,40 +46,106 @@ function startup() {
             strokes.splice(strokeIndex, 1); // remove it; we're done
         });
     }, false);
+    drawLoop();
 }
-;
-const strokes = [];
 function strokeStart(stroke) {
+    /*
     const canvas = document.getElementsByTagName("canvas")[0];
     const context = canvas.getContext("2d");
-    if (context === null)
-        return;
+    if (context === null) return;
+
     context.beginPath();
-    context.arc(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y, 8, 0, 2 * Math.PI, false); // a circle at the start
-    context.fillStyle = "black";
+    context.arc(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y, 8, 0, 2 * Math.PI, false);  // a circle at the start
     context.fill();
+    */
 }
 function strokeMove(stroke) {
+    /*
     const canvas = document.getElementsByTagName("canvas")[0];
     const context = canvas.getContext("2d");
-    if (context === null)
-        return;
+    if (context === null) return;
+    
     context.beginPath();
     context.moveTo(stroke.log[stroke.log.length - 2].x, stroke.log[stroke.log.length - 2].y);
     context.lineTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
-    context.lineWidth = 4;
-    context.strokeStyle = "black";
     context.stroke();
+    */
 }
 function strokeEnd(stroke) {
+    alert(isFrick(stroke));
+    /*
+    const canvas = document.getElementsByTagName("canvas")[0];
+    const context = canvas.getContext("2d");
+    if (context === null) return;
+    
+    context.beginPath();
+    context.moveTo(stroke.log[stroke.log.length - 2].x, stroke.log[stroke.log.length - 2].y);
+    context.lineTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
+    context.fillRect(stroke.log[stroke.log.length - 1].x - 8, stroke.log[stroke.log.length - 1].y - 8, 16, 16);  // and a square at the end
+    */
+}
+function drawLoop() {
     const canvas = document.getElementsByTagName("canvas")[0];
     const context = canvas.getContext("2d");
     if (context === null)
         return;
-    context.lineWidth = 4;
-    context.fillStyle = "black";
-    context.beginPath();
-    context.moveTo(stroke.log[stroke.log.length - 2].x, stroke.log[stroke.log.length - 2].y);
-    context.lineTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
-    context.fillRect(stroke.log[stroke.log.length - 1].x - 8, stroke.log[stroke.log.length - 1].y - 8, 16, 16); // and a square at the end
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    strokes.forEach((stroke) => {
+        switch (isFrick(stroke)) {
+            case "left":
+                {
+                    context.beginPath();
+                    context.moveTo(stroke.log[0].x, stroke.log[0].y);
+                    context.lineTo(stroke.log[0].x - 50, stroke.log[0].y - 50);
+                    context.lineTo(stroke.log[0].x - 50, stroke.log[0].y + 50);
+                    context.closePath();
+                    context.fill();
+                }
+                break;
+            case "right":
+                {
+                    context.beginPath();
+                    context.moveTo(stroke.log[0].x, stroke.log[0].y);
+                    context.lineTo(stroke.log[0].x + 50, stroke.log[0].y - 50);
+                    context.lineTo(stroke.log[0].x + 50, stroke.log[0].y + 50);
+                    context.closePath();
+                    context.fill();
+                }
+                break;
+            case "up":
+                {
+                    context.beginPath();
+                    context.moveTo(stroke.log[0].x, stroke.log[0].y);
+                    context.lineTo(stroke.log[0].x - 50, stroke.log[0].y - 50);
+                    context.lineTo(stroke.log[0].x + 50, stroke.log[0].y - 50);
+                    context.closePath();
+                    context.fill();
+                }
+                break;
+            case "down":
+                {
+                    context.beginPath();
+                    context.moveTo(stroke.log[0].x, stroke.log[0].y);
+                    context.lineTo(stroke.log[0].x - 50, stroke.log[0].y + 50);
+                    context.lineTo(stroke.log[0].x + 50, stroke.log[0].y + 50);
+                    context.closePath();
+                    context.fill();
+                }
+                break;
+        }
+    });
+    requestAnimationFrame(drawLoop);
+}
+const flickRange = 50;
+function isFrick(stroke) {
+    const dx = stroke.log[stroke.log.length - 1].x - stroke.log[0].x;
+    const dy = stroke.log[stroke.log.length - 1].y - stroke.log[0].y;
+    if (dx * dx + dy * dy < flickRange * flickRange)
+        return null;
+    if (Math.abs(dy) < Math.abs(dx)) {
+        return (0 < dx) ? "right" : "left";
+    }
+    else {
+        return (0 < dy) ? "down" : "up";
+    }
 }
