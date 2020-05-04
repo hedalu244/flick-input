@@ -7,9 +7,10 @@ function startup() {
     canvas.addEventListener("touchstart", (event) => {
         event.preventDefault();
         Array.from(event.changedTouches).forEach(touch => {
+            const rect = canvas.getBoundingClientRect();
             const stroke = {
                 id: touch.identifier,
-                log: [{ x: touch.pageX, y: touch.pageY }],
+                log: [{ x: touch.clientX - rect.left, y: touch.clientY - rect.top }],
             };
             ;
             strokes.push(stroke);
@@ -19,10 +20,11 @@ function startup() {
     canvas.addEventListener("touchmove", (event) => {
         event.preventDefault();
         Array.from(event.changedTouches).forEach(touch => {
+            const rect = canvas.getBoundingClientRect();
             const stroke = strokes.find(x => x.id === touch.identifier);
             if (stroke === undefined)
                 return;
-            stroke.log.push({ x: touch.pageX, y: touch.pageY });
+            stroke.log.push({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
             strokeMove(stroke);
         });
     }, false);
