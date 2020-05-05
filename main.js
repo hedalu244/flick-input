@@ -9,19 +9,19 @@ function strokeEnd(stroke) {
     switch (result) {
         case "left_flick":
             coord.x -= size;
-            navigator.vibrate(100);
+            navigator.vibrate(80);
             break;
         case "right_flick":
             coord.x += size;
-            navigator.vibrate(100);
+            navigator.vibrate(80);
             break;
         case "up_flick":
             coord.y -= size;
-            navigator.vibrate(100);
+            navigator.vibrate(80);
             break;
         case "down_flick":
             coord.y += size;
-            navigator.vibrate(100);
+            navigator.vibrate(80);
             break;
     }
 }
