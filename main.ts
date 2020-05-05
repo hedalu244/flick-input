@@ -9,22 +9,22 @@ function strokeStart(stroke: TouchStroke) {
 function strokeMove(stroke: TouchStroke) {
 }
 function strokeEnd(stroke: TouchStroke) {
-    const result = isFrick(stroke)
-    switch(result) {
+    const result = isFrick(stroke);
+    switch (result) {
         case "left_flick":
-            coord.x--;
+            coord.x -= size;
             navigator.vibrate(30);
             break;
         case "right_flick":
-            coord.x++;
+            coord.x += size;
             navigator.vibrate(30);
             break;
         case "up_flick":
-            coord.y--;
+            coord.y -= size;
             navigator.vibrate(30);
             break;
         case "down_flick":
-            coord.y++;
+            coord.y += size;
             navigator.vibrate(30);
             break;
     }
@@ -47,9 +47,10 @@ function isFrick(stroke: TouchStroke) {
 }
 
 const coord = {
-    x: 10,
-    y: 10,
-}
+    x: 300,
+    y: 300,
+};
+const size = 50;
 
 function drawLoop() {
     const canvas = document.getElementsByTagName("canvas")[0];
@@ -63,41 +64,40 @@ function drawLoop() {
         switch (isFrick(stroke)) {
             case "left_flick": {
                 context.beginPath();
-                context.moveTo(stroke.log[0].x, stroke.log[0].y);
-                context.lineTo(stroke.log[0].x - 50, stroke.log[0].y - 50);
-                context.lineTo(stroke.log[0].x - 50, stroke.log[0].y + 50);
+                context.moveTo(coord.x - 50, coord.y - 50);
+                context.lineTo(coord.x - 50 - 50, coord.y);
+                context.lineTo(coord.x - 50, coord.y + 50);
                 context.closePath();
                 context.fill();
             } break;
             case "right_flick": {
                 context.beginPath();
-                context.moveTo(stroke.log[0].x, stroke.log[0].y);
-                context.lineTo(stroke.log[0].x + 50, stroke.log[0].y - 50);
-                context.lineTo(stroke.log[0].x + 50, stroke.log[0].y + 50);
+                context.moveTo(coord.x + 50, coord.y - 50);
+                context.lineTo(coord.x + 50 + 50, coord.y);
+                context.lineTo(coord.x + 50, coord.y + 50);
                 context.closePath();
                 context.fill();
             } break;
             case "up_flick": {
                 context.beginPath();
-                context.moveTo(stroke.log[0].x, stroke.log[0].y);
-                context.lineTo(stroke.log[0].x - 50, stroke.log[0].y - 50);
-                context.lineTo(stroke.log[0].x + 50, stroke.log[0].y - 50);
+                context.moveTo(coord.x - 50, coord.y - 50);
+                context.lineTo(coord.x, coord.y - 50 - 50);
+                context.lineTo(coord.x + 50, coord.y - 50);
                 context.closePath();
                 context.fill();
             } break;
             case "down_flick": {
                 context.beginPath();
-                context.moveTo(stroke.log[0].x, stroke.log[0].y);
-                context.lineTo(stroke.log[0].x - 50, stroke.log[0].y + 50);
-                context.lineTo(stroke.log[0].x + 50, stroke.log[0].y + 50);
+                context.moveTo(coord.x - 50, coord.y + 50);
+                context.lineTo(coord.x, coord.y + 50 + 50);
+                context.lineTo(coord.x + 50, coord.y + 50);
                 context.closePath();
                 context.fill();
             } break;
         }
     });
     context.fillStyle = "gray";
-    const size = 30;
-    context.fillRect(coord.x * size, coord.y * size, size, size);
+    context.fillRect(coord.x - size / 2, coord.y - size / 2, size, size);
 
     requestAnimationFrame(drawLoop);
 }
@@ -150,4 +150,4 @@ window.onload = () => {
     }, false);
 
     drawLoop();
-}
+};
