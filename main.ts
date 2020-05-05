@@ -4,27 +4,51 @@ interface TouchStroke {
 }
 const strokes: TouchStroke[] = [];
 
-function strokeStart(stroke: TouchStroke) {
-}
-function strokeMove(stroke: TouchStroke) {
-}
-function strokeEnd(stroke: TouchStroke) {
-    if (transition < 1) return;
-    const result = isFrick(stroke);
-    switch (result) {
-        case "left_flick":
-            move("left");
-            break;
-        case "right_flick":
-            move("right");
-            break;
-        case "up_flick":
-            move("up");
-            break;
-        case "down_flick":
-            move("down");
-            break;
-    }
+
+function initStrokeEvent(element: HTMLElement) {
+    element.addEventListener("touchstart", (event: TouchEvent) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const rect = element.getBoundingClientRect();
+            const stroke = {
+                id: touch.identifier,
+                log: [{ x: touch.clientX - rect.left, y: touch.clientY - rect.top }],
+            };;
+            strokes.push(stroke);
+            strokeStart(stroke);
+        });
+    }, false);
+    element.addEventListener("touchmove", (event: TouchEvent) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const rect = element.getBoundingClientRect();
+            const stroke = strokes.find(x => x.id === touch.identifier);
+            if (stroke === undefined)
+                return;
+            stroke.log.push({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
+            strokeMove(stroke);
+        });
+    }, false);
+    element.addEventListener("touchend", (event: TouchEvent) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
+            if (strokeIndex === -1)
+                return;
+            const stroke = strokes[strokeIndex];
+            strokes.splice(strokeIndex, 1);  // remove it; we're done
+            strokeEnd(stroke);
+        });
+    }, false);
+    element.addEventListener("touchcancel", (event: TouchEvent) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
+            if (strokeIndex === -1)
+                return;
+            strokes.splice(strokeIndex, 1);  // remove it; we're done
+        });
+    }, false);
 }
 
 const flickRange = 50;
@@ -155,74 +179,53 @@ function drawLoop() {
     requestAnimationFrame(drawLoop);
 }
 
-function initStrokeEvent(element: HTMLElement) {
-    element.addEventListener("touchstart", (event: TouchEvent) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const rect = element.getBoundingClientRect();
-            const stroke = {
-                id: touch.identifier,
-                log: [{ x: touch.clientX - rect.left, y: touch.clientY - rect.top }],
-            };;
-            strokes.push(stroke);
-            strokeStart(stroke);
-        });
-    }, false);
-    element.addEventListener("touchmove", (event: TouchEvent) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const rect = element.getBoundingClientRect();
-            const stroke = strokes.find(x => x.id === touch.identifier);
-            if (stroke === undefined)
-                return;
-            stroke.log.push({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
-            strokeMove(stroke);
-        });
-    }, false);
-    element.addEventListener("touchend", (event: TouchEvent) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
-            if (strokeIndex === -1)
-                return;
-            const stroke = strokes[strokeIndex];
-            strokes.splice(strokeIndex, 1);  // remove it; we're done
-            strokeEnd(stroke);
-        });
-    }, false);
-    element.addEventListener("touchcancel", (event: TouchEvent) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
-            if (strokeIndex === -1)
-                return;
-            strokes.splice(strokeIndex, 1);  // remove it; we're done
-        });
-    }, false);
+function strokeStart(stroke: TouchStroke) {
 }
+function strokeMove(stroke: TouchStroke) {
+}
+function strokeEnd(stroke: TouchStroke) {
+    if (transition < 1) return;
+    const result = isFrick(stroke);
+    switch (result) {
+        case "left_flick":
+            move("left");
+            break;
+        case "right_flick":
+            move("right");
+            break;
+        case "up_flick":
+            move("up");
+            break;
+        case "down_flick":
+            move("down");
+            break;
+    }
+}
+function keyDown(event: KeyboardEvent) {
+    if (event.repeat) return;
+
+    switch (event.code) {
+        case "ArrowLeft": {
+            move("left");
+        } break;
+        case "ArrowRight": {
+            move("right");
+        } break;
+        case "ArrowUp": {
+            move("up");
+        } break;
+        case "ArrowDown": {
+            move("down");
+        } break;
+    }
+}
+
 
 window.onload = () => {
     const canvas = document.getElementsByTagName("canvas")[0];
     initStrokeEvent(canvas);
 
-    document.addEventListener("keydown", (event: KeyboardEvent) => {
-        if (event.repeat) return;
-
-        switch (event.code) {
-            case "ArrowLeft": {
-                move("left");
-            } break;
-            case "ArrowRight": {
-                move("right");
-            } break;
-            case "ArrowUp": {
-                move("up");
-            } break;
-            case "ArrowDown": {
-                move("down");
-            } break;
-        }
-    }, false);
+    document.addEventListener("keydown", keyDown, false);
 
     drawLoop();
 };
