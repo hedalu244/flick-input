@@ -13,28 +13,16 @@ function strokeEnd(stroke: TouchStroke) {
     const result = isFrick(stroke);
     switch (result) {
         case "left_flick":
-            prevCoord = coord;
-            coord = { x: coord.x - size, y: coord.y };
-            navigator.vibrate(80);
-            transition = 0;
+            move("left");
             break;
         case "right_flick":
-            prevCoord = coord;
-            coord = { x: coord.x + size, y: coord.y };
-            navigator.vibrate(80);
-            transition = 0;
+            move("right");
             break;
         case "up_flick":
-            prevCoord = coord;
-            coord = { x: coord.x, y: coord.y - size };
-            navigator.vibrate(80);
-            transition = 0;
+            move("up");
             break;
         case "down_flick":
-            prevCoord = coord;
-            coord = { x: coord.x, y: coord.y + size };
-            navigator.vibrate(80);
-            transition = 0;
+            move("down");
             break;
     }
 }
@@ -65,6 +53,18 @@ let prevCoord = {
 };
 const size = 50;
 let transition = 1;
+
+function move(direction: "left" | "right" | "up" | "down") {
+    prevCoord = coord;
+    transition = 0;
+    navigator.vibrate(80);
+    coord = {
+        "left": { x: coord.x - size, y: coord.y },
+        "right": { x: coord.x + size, y: coord.y },
+        "up": { x: coord.x, y: coord.y - size },
+        "down": { x: coord.x, y: coord.y + size },
+    }[direction];
+}
 
 function drawLoop() {
     const canvas = document.getElementsByTagName("canvas")[0];
@@ -146,10 +146,10 @@ function drawLoop() {
     const mixCoord = {
         x: prevCoord.x + (coord.x - prevCoord.x) * transition,
         y: prevCoord.y + (coord.y - prevCoord.y) * transition,
-    }
+    };
     context.fillStyle = "gray";
     context.fillRect(mixCoord.x - size / 2, mixCoord.y - size / 2, size, size);
-    
+
     transition = Math.min(transition + 0.1, 1);
 
     requestAnimationFrame(drawLoop);
@@ -204,6 +204,25 @@ function initStrokeEvent(element: HTMLElement) {
 window.onload = () => {
     const canvas = document.getElementsByTagName("canvas")[0];
     initStrokeEvent(canvas);
+
+    document.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (event.repeat) return;
+
+        switch (event.code) {
+            case "ArrowLeft": {
+                move("left");
+            } break;
+            case "ArrowRight": {
+                move("right");
+            } break;
+            case "ArrowUp": {
+                move("up");
+            } break;
+            case "ArrowDown": {
+                move("down");
+            } break;
+        }
+    }, false);
 
     drawLoop();
 };
