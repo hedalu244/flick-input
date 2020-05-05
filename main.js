@@ -68,10 +68,11 @@ let prevCoord = {
     y: 300,
 };
 const size = 50;
-let transition = 1;
+let elapse = 1;
+const transitionLengeh = 15;
 function move(direction) {
     prevCoord = coord;
-    transition = 0;
+    elapse = 0;
     navigator.vibrate(80);
     coord = {
         "left": { x: coord.x - size, y: coord.y },
@@ -86,7 +87,7 @@ function drawLoop() {
     if (context === null)
         return;
     context.clearRect(0, 0, canvas.width, canvas.height);
-    if (1 <= transition) {
+    if (transitionLengeh <= elapse) {
         context.fillStyle = "lightgray";
         if (strokes.length !== 0) {
             context.beginPath();
@@ -161,12 +162,12 @@ function drawLoop() {
         });
     }
     const mixCoord = {
-        x: prevCoord.x + (coord.x - prevCoord.x) * transition,
-        y: prevCoord.y + (coord.y - prevCoord.y) * transition,
+        x: prevCoord.x + (coord.x - prevCoord.x) * Math.min(elapse / transitionLengeh, 1),
+        y: prevCoord.y + (coord.y - prevCoord.y) * Math.min(elapse / transitionLengeh, 1),
     };
     context.fillStyle = "gray";
     context.fillRect(mixCoord.x - size / 2, mixCoord.y - size / 2, size, size);
-    transition = Math.min(transition + 0.1, 1);
+    elapse++;
     requestAnimationFrame(drawLoop);
 }
 function strokeStart(stroke) {
@@ -174,7 +175,7 @@ function strokeStart(stroke) {
 function strokeMove(stroke) {
 }
 function strokeEnd(stroke) {
-    if (transition < 1)
+    if (elapse < transitionLengeh)
         return;
     const result = isFrick(stroke);
     switch (result) {
