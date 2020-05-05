@@ -8,11 +8,20 @@ function strokeEnd(stroke) {
     const result = isFrick(stroke);
     switch (result) {
         case "left_flick":
-        case "right_flick":
-        case "up_flick":
-        case "down_flick":
+            coord.x--;
             navigator.vibrate(30);
-            alert(result);
+            break;
+        case "right_flick":
+            coord.x++;
+            navigator.vibrate(30);
+            break;
+        case "up_flick":
+            coord.y--;
+            navigator.vibrate(30);
+            break;
+        case "down_flick":
+            coord.y++;
+            navigator.vibrate(30);
             break;
     }
 }
@@ -29,12 +38,17 @@ function isFrick(stroke) {
         return (0 < dy) ? "down_flick" : "up_flick";
     }
 }
+const coord = {
+    x: 10,
+    y: 10,
+};
 function drawLoop() {
     const canvas = document.getElementsByTagName("canvas")[0];
     const context = canvas.getContext("2d");
     if (context === null)
         return;
     context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "gold";
     strokes.forEach((stroke) => {
         switch (isFrick(stroke)) {
             case "left_flick":
@@ -79,6 +93,9 @@ function drawLoop() {
                 break;
         }
     });
+    context.fillStyle = "gray";
+    const size = 30;
+    context.fillRect(coord.x * size, coord.y * size, size, size);
     requestAnimationFrame(drawLoop);
 }
 window.onload = () => {
