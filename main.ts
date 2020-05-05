@@ -132,13 +132,11 @@ function drawLoop() {
     requestAnimationFrame(drawLoop);
 }
 
-
-window.onload = () => {
-    const canvas = document.getElementsByTagName("canvas")[0];
-    canvas.addEventListener("touchstart", (event: TouchEvent) => {
+function initStrokeEvent(element: HTMLElement){
+    element.addEventListener("touchstart", (event: TouchEvent) => {
         event.preventDefault();
         Array.from(event.changedTouches).forEach(touch => {
-            const rect = canvas.getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
             const stroke = {
                 id: touch.identifier,
                 log: [{ x: touch.clientX - rect.left, y: touch.clientY - rect.top }],
@@ -147,10 +145,10 @@ window.onload = () => {
             strokeStart(stroke);
         });
     }, false);
-    canvas.addEventListener("touchmove", (event: TouchEvent) => {
+    element.addEventListener("touchmove", (event: TouchEvent) => {
         event.preventDefault();
         Array.from(event.changedTouches).forEach(touch => {
-            const rect = canvas.getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
             const stroke = strokes.find(x => x.id === touch.identifier);
             if (stroke === undefined)
                 return;
@@ -158,7 +156,7 @@ window.onload = () => {
             strokeMove(stroke);
         });
     }, false);
-    canvas.addEventListener("touchend", (event: TouchEvent) => {
+    element.addEventListener("touchend", (event: TouchEvent) => {
         event.preventDefault();
         Array.from(event.changedTouches).forEach(touch => {
             const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
@@ -169,7 +167,7 @@ window.onload = () => {
             strokeEnd(stroke);
         });
     }, false);
-    canvas.addEventListener("touchcancel", (event: TouchEvent) => {
+    element.addEventListener("touchcancel", (event: TouchEvent) => {
         event.preventDefault();
         Array.from(event.changedTouches).forEach(touch => {
             const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
@@ -178,6 +176,11 @@ window.onload = () => {
             strokes.splice(strokeIndex, 1);  // remove it; we're done
         });
     }, false);
+}
+
+window.onload = () => {
+    const canvas = document.getElementsByTagName("canvas")[0];
+    initStrokeEvent(canvas);
 
     drawLoop();
 };
