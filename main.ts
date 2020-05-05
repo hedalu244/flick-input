@@ -1,12 +1,10 @@
 interface TouchStroke {
     readonly id: number;
     readonly log: { x: number, y: number; }[];
-};
+}
 const strokes: TouchStroke[] = [];
 
-startup();
-
-function startup() {
+window.onload = () => {
     const canvas = document.getElementsByTagName("canvas")[0];
     canvas.addEventListener("touchstart", (event: TouchEvent) => {
         event.preventDefault();
@@ -56,40 +54,20 @@ function startup() {
 }
 
 function strokeStart(stroke: TouchStroke) {
-    /*
-    const canvas = document.getElementsByTagName("canvas")[0];
-    const context = canvas.getContext("2d");
-    if (context === null) return;
-
-    context.beginPath();
-    context.arc(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y, 8, 0, 2 * Math.PI, false);  // a circle at the start
-    context.fill();
-    */
 }
 function strokeMove(stroke: TouchStroke) {
-    /*
-    const canvas = document.getElementsByTagName("canvas")[0];
-    const context = canvas.getContext("2d");
-    if (context === null) return;
-    
-    context.beginPath();
-    context.moveTo(stroke.log[stroke.log.length - 2].x, stroke.log[stroke.log.length - 2].y);
-    context.lineTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
-    context.stroke();
-    */
 }
 function strokeEnd(stroke: TouchStroke) {
-    alert(isFrick(stroke));
-    /*
-    const canvas = document.getElementsByTagName("canvas")[0];
-    const context = canvas.getContext("2d");
-    if (context === null) return;
-    
-    context.beginPath();
-    context.moveTo(stroke.log[stroke.log.length - 2].x, stroke.log[stroke.log.length - 2].y);
-    context.lineTo(stroke.log[stroke.log.length - 1].x, stroke.log[stroke.log.length - 1].y);
-    context.fillRect(stroke.log[stroke.log.length - 1].x - 8, stroke.log[stroke.log.length - 1].y - 8, 16, 16);  // and a square at the end
-    */
+    const result = isFrick(stroke)
+    switch(result) {
+        case "left_flick":
+        case "right_flick":
+        case "up_flick":
+        case "down_flick":
+            navigator.vibrate(30);
+            alert(result);
+            break;
+    }
 }
 
 function drawLoop() {
@@ -101,7 +79,7 @@ function drawLoop() {
 
     strokes.forEach((stroke) => {
         switch (isFrick(stroke)) {
-            case "left": {
+            case "left_flick": {
                 context.beginPath();
                 context.moveTo(stroke.log[0].x, stroke.log[0].y);
                 context.lineTo(stroke.log[0].x - 50, stroke.log[0].y - 50);
@@ -109,7 +87,7 @@ function drawLoop() {
                 context.closePath();
                 context.fill();
             } break;
-            case "right": {
+            case "right_flick": {
                 context.beginPath();
                 context.moveTo(stroke.log[0].x, stroke.log[0].y);
                 context.lineTo(stroke.log[0].x + 50, stroke.log[0].y - 50);
@@ -117,7 +95,7 @@ function drawLoop() {
                 context.closePath();
                 context.fill();
             } break;
-            case "up": {
+            case "up_flick": {
                 context.beginPath();
                 context.moveTo(stroke.log[0].x, stroke.log[0].y);
                 context.lineTo(stroke.log[0].x - 50, stroke.log[0].y - 50);
@@ -125,7 +103,7 @@ function drawLoop() {
                 context.closePath();
                 context.fill();
             } break;
-            case "down": {
+            case "down_flick": {
                 context.beginPath();
                 context.moveTo(stroke.log[0].x, stroke.log[0].y);
                 context.lineTo(stroke.log[0].x - 50, stroke.log[0].y + 50);
@@ -148,9 +126,9 @@ function isFrick(stroke: TouchStroke) {
         return null;
 
     if (Math.abs(dy) < Math.abs(dx)) {
-        return (0 < dx) ? "right" : "left";
+        return (0 < dx) ? "right_flick" : "left_flick";
     }
     else {
-        return (0 < dy) ? "down" : "up";
+        return (0 < dy) ? "down_flick" : "up_flick";
     }
 }
