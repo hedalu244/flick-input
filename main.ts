@@ -59,6 +59,36 @@ function drawLoop() {
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    context.fillStyle = "lightgray";
+    if (strokes.length !== 0) {
+        context.beginPath();
+        context.moveTo(coord.x - 50, coord.y - 30);
+        context.lineTo(coord.x - 50 - 30, coord.y);
+        context.lineTo(coord.x - 50, coord.y + 30);
+        context.closePath();
+        context.fill();
+
+        context.beginPath();
+        context.moveTo(coord.x + 50, coord.y - 30);
+        context.lineTo(coord.x + 50 + 30, coord.y);
+        context.lineTo(coord.x + 50, coord.y + 30);
+        context.closePath();
+        context.fill();
+
+        context.beginPath();
+        context.moveTo(coord.x - 30, coord.y - 50);
+        context.lineTo(coord.x, coord.y - 30 - 50);
+        context.lineTo(coord.x + 30, coord.y - 50);
+        context.closePath();
+        context.fill();
+
+        context.beginPath();
+        context.moveTo(coord.x - 30, coord.y + 50);
+        context.lineTo(coord.x, coord.y + 30 + 50);
+        context.lineTo(coord.x + 30, coord.y + 50);
+        context.closePath();
+        context.fill();
+    }
     context.fillStyle = "gold";
     strokes.forEach((stroke) => {
         switch (isFrick(stroke)) {
