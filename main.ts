@@ -7,6 +7,7 @@ const strokes: TouchStroke[] = [];
 
 function initStrokeEvent(element: HTMLElement) {
     element.addEventListener("touchstart", (event: TouchEvent) => {
+        useTouch = true;
         event.preventDefault();
         Array.from(event.changedTouches).forEach(touch => {
             const rect = element.getBoundingClientRect();
@@ -78,6 +79,8 @@ let prevCoord = {
 const size = 50;
 let elapse = 1;
 
+let useTouch = false;
+
 const transitionLengeh = 15;
 
 function move(direction: "left" | "right" | "up" | "down") {
@@ -99,37 +102,38 @@ function drawLoop() {
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (transitionLengeh <= elapse) {
+    if (transitionLengeh <= elapse && strokes.length !== 0 || !useTouch && 200 < elapse) {
         context.fillStyle = "lightgray";
-        if (strokes.length !== 0) {
-            context.beginPath();
-            context.moveTo(coord.x - 50, coord.y - 30);
-            context.lineTo(coord.x - 50 - 30, coord.y);
-            context.lineTo(coord.x - 50, coord.y + 30);
-            context.closePath();
-            context.fill();
+        context.beginPath();
+        context.moveTo(coord.x - 50, coord.y - 30);
+        context.lineTo(coord.x - 50 - 30, coord.y);
+        context.lineTo(coord.x - 50, coord.y + 30);
+        context.closePath();
+        context.fill();
 
-            context.beginPath();
-            context.moveTo(coord.x + 50, coord.y - 30);
-            context.lineTo(coord.x + 50 + 30, coord.y);
-            context.lineTo(coord.x + 50, coord.y + 30);
-            context.closePath();
-            context.fill();
+        context.beginPath();
+        context.moveTo(coord.x + 50, coord.y - 30);
+        context.lineTo(coord.x + 50 + 30, coord.y);
+        context.lineTo(coord.x + 50, coord.y + 30);
+        context.closePath();
+        context.fill();
 
-            context.beginPath();
-            context.moveTo(coord.x - 30, coord.y - 50);
-            context.lineTo(coord.x, coord.y - 30 - 50);
-            context.lineTo(coord.x + 30, coord.y - 50);
-            context.closePath();
-            context.fill();
+        context.beginPath();
+        context.moveTo(coord.x - 30, coord.y - 50);
+        context.lineTo(coord.x, coord.y - 30 - 50);
+        context.lineTo(coord.x + 30, coord.y - 50);
+        context.closePath();
+        context.fill();
 
-            context.beginPath();
-            context.moveTo(coord.x - 30, coord.y + 50);
-            context.lineTo(coord.x, coord.y + 30 + 50);
-            context.lineTo(coord.x + 30, coord.y + 50);
-            context.closePath();
-            context.fill();
-        }
+        context.beginPath();
+        context.moveTo(coord.x - 30, coord.y + 50);
+        context.lineTo(coord.x, coord.y + 30 + 50);
+        context.lineTo(coord.x + 30, coord.y + 50);
+        context.closePath();
+        context.fill();
+    }
+
+    if (transitionLengeh <= elapse) {
         context.fillStyle = "gold";
         strokes.forEach((stroke) => {
             switch (isFrick(stroke)) {
@@ -204,8 +208,8 @@ function strokeEnd(stroke: TouchStroke) {
     }
 }
 function keyDown(event: KeyboardEvent) {
+    useTouch = false;
     if (event.repeat) return;
-
     switch (event.code) {
         case "ArrowLeft": {
             move("left");
@@ -228,6 +232,9 @@ window.onload = () => {
     initStrokeEvent(canvas);
 
     document.addEventListener("keydown", keyDown, false);
+
+    const ua = navigator.userAgent;
+    useTouch = /(iPhone|iPad|iPod|Android)/i.test(ua);
 
     drawLoop();
 };
