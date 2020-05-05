@@ -1,53 +1,5 @@
 "use strict";
 const strokes = [];
-window.onload = () => {
-    const canvas = document.getElementsByTagName("canvas")[0];
-    canvas.addEventListener("touchstart", (event) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const rect = canvas.getBoundingClientRect();
-            const stroke = {
-                id: touch.identifier,
-                log: [{ x: touch.clientX - rect.left, y: touch.clientY - rect.top }],
-            };
-            ;
-            strokes.push(stroke);
-            strokeStart(stroke);
-        });
-    }, false);
-    canvas.addEventListener("touchmove", (event) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const rect = canvas.getBoundingClientRect();
-            const stroke = strokes.find(x => x.id === touch.identifier);
-            if (stroke === undefined)
-                return;
-            stroke.log.push({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
-            strokeMove(stroke);
-        });
-    }, false);
-    canvas.addEventListener("touchend", (event) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
-            if (strokeIndex === -1)
-                return;
-            const stroke = strokes[strokeIndex];
-            strokes.splice(strokeIndex, 1); // remove it; we're done
-            strokeEnd(stroke);
-        });
-    }, false);
-    canvas.addEventListener("touchcancel", (event) => {
-        event.preventDefault();
-        Array.from(event.changedTouches).forEach(touch => {
-            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
-            if (strokeIndex === -1)
-                return;
-            strokes.splice(strokeIndex, 1); // remove it; we're done
-        });
-    }, false);
-    drawLoop();
-};
 function strokeStart(stroke) {
 }
 function strokeMove(stroke) {
@@ -62,6 +14,19 @@ function strokeEnd(stroke) {
             navigator.vibrate(30);
             alert(result);
             break;
+    }
+}
+const flickRange = 50;
+function isFrick(stroke) {
+    const dx = stroke.log[stroke.log.length - 1].x - stroke.log[0].x;
+    const dy = stroke.log[stroke.log.length - 1].y - stroke.log[0].y;
+    if (dx * dx + dy * dy < flickRange * flickRange)
+        return null;
+    if (Math.abs(dy) < Math.abs(dx)) {
+        return (0 < dx) ? "right_flick" : "left_flick";
+    }
+    else {
+        return (0 < dy) ? "down_flick" : "up_flick";
     }
 }
 function drawLoop() {
@@ -116,16 +81,51 @@ function drawLoop() {
     });
     requestAnimationFrame(drawLoop);
 }
-const flickRange = 50;
-function isFrick(stroke) {
-    const dx = stroke.log[stroke.log.length - 1].x - stroke.log[0].x;
-    const dy = stroke.log[stroke.log.length - 1].y - stroke.log[0].y;
-    if (dx * dx + dy * dy < flickRange * flickRange)
-        return null;
-    if (Math.abs(dy) < Math.abs(dx)) {
-        return (0 < dx) ? "right_flick" : "left_flick";
-    }
-    else {
-        return (0 < dy) ? "down_flick" : "up_flick";
-    }
-}
+window.onload = () => {
+    const canvas = document.getElementsByTagName("canvas")[0];
+    canvas.addEventListener("touchstart", (event) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const rect = canvas.getBoundingClientRect();
+            const stroke = {
+                id: touch.identifier,
+                log: [{ x: touch.clientX - rect.left, y: touch.clientY - rect.top }],
+            };
+            ;
+            strokes.push(stroke);
+            strokeStart(stroke);
+        });
+    }, false);
+    canvas.addEventListener("touchmove", (event) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const rect = canvas.getBoundingClientRect();
+            const stroke = strokes.find(x => x.id === touch.identifier);
+            if (stroke === undefined)
+                return;
+            stroke.log.push({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
+            strokeMove(stroke);
+        });
+    }, false);
+    canvas.addEventListener("touchend", (event) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
+            if (strokeIndex === -1)
+                return;
+            const stroke = strokes[strokeIndex];
+            strokes.splice(strokeIndex, 1); // remove it; we're done
+            strokeEnd(stroke);
+        });
+    }, false);
+    canvas.addEventListener("touchcancel", (event) => {
+        event.preventDefault();
+        Array.from(event.changedTouches).forEach(touch => {
+            const strokeIndex = strokes.findIndex(x => x.id === touch.identifier);
+            if (strokeIndex === -1)
+                return;
+            strokes.splice(strokeIndex, 1); // remove it; we're done
+        });
+    }, false);
+    drawLoop();
+};
